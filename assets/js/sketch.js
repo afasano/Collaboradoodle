@@ -6,7 +6,11 @@ function setup(){
 }
 
 function draw() {
+
+}
+
+function mouseDragged() {
   noStroke();
-  fill(255, 30);
+  fill(255);
   ellipse(mouseX, mouseY, 20, 20);
 }
