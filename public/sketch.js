@@ -3,7 +3,7 @@ function setup(){
   createCanvas(600,400);
   background(51);
 
-  socket=io.connect('https://enigmatic-bastion-68751.herokuapp.com/');
+  socket=io.connect('https://collaboradoodle.herokuapp.com/');
   socket.on('mouse', newDrawing);
 
 }
