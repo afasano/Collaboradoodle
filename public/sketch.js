@@ -1,13 +1,30 @@
 var socket;
+var canvas;
+var button;
+const backgroundColor = 51;
+
 function setup(){
   //1920,947
-  createCanvas(windowWidth,windowHeight);
-  background(51);
+  canvas = createCanvas(windowWidth,windowHeight);
+  canvas.position(0,0);
+  background(backgroundColor);
 
-  socket=io.connect('https://collaboradoodle.herokuapp.com/');
+  //create button element to clear canvas
+  button = createButton("Clear Canvas");
+  button.addClass("huge ui primary button");
+  button.position(20,20);
+  button.mousePressed(clearCanvas);
+
+  socket = io.connect('https://collaboradoodle.herokuapp.com/');
+  // socket = io.connect("http://localhost:3000"); //For TESTING: LISTEN ON PORT 3000
   socket.on('mouse', newDrawing);
 
 }
+
+function clearCanvas(){
+  background(backgroundColor);
+}
+
 function newDrawing(data){
   noStroke();
   fill(255,0,100);
