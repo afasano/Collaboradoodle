@@ -1,22 +1,29 @@
 "use strict";
 
-var socket;
 var canvas;
-var button;
+var socket;
+var clearBtn;
+var downloadBtn
 var line;
 const backgroundColor = 51;
 
 function setup(){
   //1920,947
-  canvas = createCanvas(windowWidth,windowHeight);
+  canvas = createCanvas(windowWidth, windowHeight);
   canvas.position(0,0);
   background(backgroundColor);
 
   //create button element to clear canvas
-  button = createButton("Clear Canvas");
-  button.addClass("huge ui primary button");
-  button.position(20,20);
-  button.mousePressed(clearDatabase);
+  clearBtn = createButton("Clear Canvas");
+  clearBtn.addClass("huge negative ui button");
+  clearBtn.position(20, 20);
+  clearBtn.mousePressed(clearDatabase);
+
+  //button to download canvas
+  downloadBtn = createButton("Download");
+  downloadBtn.addClass("huge ui button");
+  downloadBtn.position(20, 80);
+  downloadBtn.mousePressed(download);
 
   // socket = io.connect('https://collaboradoodle.herokuapp.com/');
   socket = io.connect("http://localhost:3000"); //For TESTING: LISTEN ON PORT 3000
@@ -46,6 +53,11 @@ function clearCanvas(){
 function clearDatabase() {
   clearCanvas();
   socket.emit('clearDB');
+}
+
+function download() {
+  var name = prompt("Name of Drawing: ", "Drawing");
+  saveCanvas('canvas', name, 'jpg');
 }
 
 function newDrawing(data){

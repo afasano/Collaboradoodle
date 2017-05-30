@@ -72,6 +72,7 @@ function newConnection(socket) {
     });
   });
 
+  //clear database and all client canvases
   socket.on('clearDB', function() {
     Stroke.remove({}, function(err) {
       if(err) {
