@@ -1,4 +1,4 @@
-var express   = require ("express");
+var express   = require ("express"),
     app       = express(),
     mongoose  = require("mongoose");
 
@@ -54,12 +54,10 @@ function newConnection(socket) {
     }
   });
 
-  socket.on('mouse', mouseMsg)
-
-  function mouseMsg(data){
+  socket.on('mouse', function(data) {
     socket.broadcast.emit('mouse', data);
     console.log(data);
-  }
+  })
 
   //recieve line drawn from client and store into database
   socket.on('stroke', function(line) {
@@ -72,5 +70,16 @@ function newConnection(socket) {
         console.log("Line Stored");
       }
     });
+  });
+
+  socket.on('clearDB', function() {
+    Stroke.remove({}, function(err) {
+      if(err) {
+        console.log(err);
+      } else {
+        console.log("Cleared Database");
+      }
+    });
+    socket.broadcast.emit('clearCanvas');
   });
 }

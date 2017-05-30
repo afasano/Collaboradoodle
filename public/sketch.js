@@ -16,11 +16,14 @@ function setup(){
   button = createButton("Clear Canvas");
   button.addClass("huge ui primary button");
   button.position(20,20);
-  button.mousePressed(clearCanvas);
+  button.mousePressed(clearDatabase);
 
   // socket = io.connect('https://collaboradoodle.herokuapp.com/');
   socket = io.connect("http://localhost:3000"); //For TESTING: LISTEN ON PORT 3000
   socket.on('mouse', newDrawing);
+
+  //clear canvas
+  socket.on('clearCanvas', clearCanvas);
 
   //draw all strokes already in database
   socket.on('presentCanvas', function(allStrokes) {
@@ -38,6 +41,11 @@ function setup(){
 
 function clearCanvas(){
   background(backgroundColor);
+}
+
+function clearDatabase() {
+  clearCanvas();
+  socket.emit('clearDB');
 }
 
 function newDrawing(data){
