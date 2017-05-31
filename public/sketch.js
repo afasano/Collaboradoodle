@@ -10,7 +10,7 @@ const backgroundColor = 51;
 function setup(){
   //1920,947
   canvas = createCanvas(windowWidth, windowHeight);
-  canvas.position(0,0);
+  canvas.position(0, 0);
   background(backgroundColor);
 
   //create button element to clear canvas
@@ -57,21 +57,23 @@ function clearDatabase() {
 
 function download() {
   var name = prompt("Name of Drawing: ", "Drawing");
-  saveCanvas('canvas', name, 'jpg');
+  if (name != null) {
+      saveCanvas('canvas', name, 'jpg');
+  }
 }
 
 function newDrawing(data){
   noStroke();
-  fill(255,0,100);
+  fill(255, 0, 100);
   ellipse(data.x, data.y, 36, 36);
 }
 
 function mouseMoved(){
   //makes sure the element in focus is the body (fixes bug with drawing when click on button and with prompt)
   if(mouseIsPressed && document.activeElement == document.body){
-    var data={
-      x:mouseX,
-      y:mouseY
+    var data = {
+      x: mouseX,
+      y: mouseY
     }
     //stores all the shapes(drawings) into a line array
     line.push(data);
@@ -93,38 +95,18 @@ function draw(){
 //  console.log(mouseX+','+mouseY);
 }
 
-// function mouseClicked(){
-//   console.log('Sending: '+mouseX+','+mouseY);
-//   var data={
-//     x:mouseX,
-//     y:mouseY
-//   }
-//   socket.emit('mouse',data);
-//   noStroke();
-//   fill(255);
-//   ellipse(mouseX,mouseY,36,36);
-// }
-//
-//
-// function touchStarted(){
-//   console.log('Sending: '+mouseX+','+mouseY);
-//   var data={
-//     x:mouseX,
-//     y:mouseY
-//   }
-//   socket.emit('mouse',data);
-//   noStroke();
-//   fill(255);
-//   ellipse(mouseX,mouseY,36,36);
-// }
-// function touchMoved(){
-//   console.log('Sending: '+mouseX+','+mouseY);
-//   var data={
-//     x:mouseX,
-//     y:mouseY
-//   }
-//   socket.emit('mouse',data);
-//   noStroke();
-//   fill(255);
-//   ellipse(mouseX,mouseY,36,36);
-// }
+function touchMoved(){
+  var data = {
+    x: mouseX,
+    y: mouseY
+  }
+  line.push(data);
+  socket.emit('mouse', data);
+  noStroke();
+  fill(255);
+  ellipse(mouseX, mouseY, 36, 36);
+}
+
+function touchEnded() {
+  mouseReleased();
+}
