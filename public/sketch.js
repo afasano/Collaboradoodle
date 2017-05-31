@@ -67,7 +67,8 @@ function newDrawing(data){
 }
 
 function mouseMoved(){
-  if(mouseIsPressed){
+  //makes sure the element in focus is the body (fixes bug with drawing when click on button and with prompt)
+  if(mouseIsPressed && document.activeElement == document.body){
     var data={
       x:mouseX,
       y:mouseY
