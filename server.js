@@ -1,30 +1,33 @@
 var express   = require ("express"),
     app       = express(),
-    mongoose  = require("mongoose");
+    mongoose  = require("mongoose"),
+    path      = require("path"),
+    Stroke    = require("./models/stroke");
 
 mongoose.connect("mongodb://localhost/collab");
-app.use(express.static('public'));
-
-var strokeSchema = new mongoose.Schema({
-  stroke: [
-    {
-      x: Number,
-      y: Number
-    }
-  ]
-});
-
-var Stroke = mongoose.model("Stroke", strokeSchema);
+app.set("view engine", "ejs");
+app.use(express.static(__dirname + "/public"));
 
 //remove all drawings from database
 Stroke.remove({}, function(err) {
   if (err) {
     console.log(err);
   } else {
-    console.log("Removed strokes");
+    console.log("Removed strokes")
+    console.log(__dirname);
   }
 });
 
+
+
+//ROUTES
+app.get("/", function(req, res) {
+  res.render("landing");
+});
+
+app.get("/canvas", function(req, res) {
+  res.sendFile(path.join(__dirname + "/views/" + "index.html"));
+});
 
 // var server = app.listen(process.env.PORT, process.env.IP, function() {
 //   console.log("Server is running");
