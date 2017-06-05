@@ -26,7 +26,7 @@ passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
-//remove all drawings from database
+//FOR TESTING: remove all drawings from database
 Stroke.remove({}, function(err) {
   if (err) {
     console.log(err);
