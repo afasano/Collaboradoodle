@@ -165,23 +165,32 @@ function newConnection(socket) {
       if (err) {
         console.log(err);
       } else {
-        //get the id of the most recent stroke
-        var id = strokes[strokes.length - 1]._id;
+        if (strokes.length > 0) {
+          //get the id of the most recent stroke
+          var id = strokes[strokes.length - 1]._id;
 
-        //send the most recent stroke to store in array in client
-        socket.emit("undo", strokes[strokes.length - 1]);
-
-        //removes the most recent stroke
-        Stroke.remove({_id: id}, function(err) {
-          if (err) {
-            console.log(err);
-          } else {
-            console.log("Undo");
-
-            //returns all strokes
-            getCanvas();
+          var data = {};
+          if (strokes.length == 1) {
+            data.noMore = true;
           }
-        });
+          data.stroke = strokes[strokes.length - 1];
+          //send the most recent stroke to store in array in client
+          socket.emit("undo", data);
+
+          //removes the most recent stroke
+          Stroke.remove({_id: id}, function(err) {
+            if (err) {
+              console.log(err);
+            } else {
+              console.log("Undo");
+
+              //returns all strokes
+              getCanvas();
+            }
+          });
+        } else {
+          socket.emit("undo", false);
+        }
       }
     });
   });
@@ -212,7 +221,7 @@ function newConnection(socket) {
       if (err) {
         console.log(err);
       } else {
-        console.log("Got Canvas");
+        // console.log("Got Canvas");
         io.sockets.emit("refreshCanvas", allStrokes);
       }
     });
