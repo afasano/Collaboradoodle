@@ -113,7 +113,7 @@ function newConnection(socket) {
 
   //send strokes in database to new connection
   Stroke.find({}, function(err, allStrokes) {
-    if(err) {
+    if (err) {
       console.log(err);
     } else {
       //send allStrokes to sender-client only
@@ -135,6 +135,7 @@ function newConnection(socket) {
 
   //recieve line drawn from client and store into database
   socket.on("stroke", function(strokeData) {
+    console.log(strokeData);
     Stroke.create(strokeData, function(err, createdStroke) {
       if (err) {
         console.log(err);
@@ -147,12 +148,67 @@ function newConnection(socket) {
   //clear database and all client canvases
   socket.on("clearDB", function() {
     Stroke.remove({}, function(err) {
-      if(err) {
+      if (err) {
         console.log(err);
       } else {
         console.log("Cleared Database");
+        socket.broadcast.emit("clearCanvas");
       }
     });
-    socket.broadcast.emit("clearCanvas");
   });
+  //ERROR With Stroke.remove
+  //undo
+  socket.on("undo", function(user) {
+    console.log("User: " + JSON.stringify(user) + "\n Type: " + typeof(user._id));
+    var author = {
+      author: {
+        id: mongoose.Types.ObjectId(user._id),
+        username: user.username
+      }
+    };
+  //   Stroke.findOneAndRemove(author).sort({date: 'desc'}).exec(function(err, strokes) {
+  //     if (err) {
+  //       console.log(err);
+  //     } else {
+  //       console.log(strokes);
+  //       console.log("Undo");
+  //       Stroke.find({}, function(err, allStrokes) {
+  //         if (err) {
+  //           console.log(err);
+  //         } else {
+  //           io.sockets.emit("refreshCanvas", allStrokes);
+  //         }
+  //       });
+  //     }
+  //   });
+  //   //////
+  // });
+  //Sort option doesn't work
+  Stroke.find(author, function(err, strokes) {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log(JSON.stringify(strokes));
+      var id = strokes[strokes.length - 1]._id;
+      console.log(id);
+      Stroke.remove({_id: id}, function(err, removed) {
+        if (err) {
+          console.log(err);
+        } else {
+          console.log("Undo");
+          Stroke.find({}, function(err, allStrokes) {
+            if (err) {
+              console.log(err);
+            } else {
+              io.sockets.emit("refreshCanvas", allStrokes);
+            }
+          });
+        }
+      });
+    }
+  });
+  //////
+});
+
+  //redo
 }
