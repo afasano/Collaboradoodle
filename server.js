@@ -7,7 +7,7 @@ var express                 = require ("express"),
     LocalStrategy           = require("passport-local"),
     passportLocalMongoose   = require("passport-local-mongoose"),
     Stroke                  = require("./models/stroke"),
-    User                    = require("./models/user");;
+    User                    = require("./models/user");
 
 mongoose.connect("mongodb://localhost/collab");
 app.use(express.static(__dirname + "/public"));
@@ -118,7 +118,7 @@ function newConnection(socket) {
     } else {
       //send allStrokes to sender-client only
       socket.emit("presentCanvas", allStrokes);
-      console.log("Sent allStrokes to: " + socket.id);
+      // console.log("Sent allStrokes to: " + socket.id);
     }
   });
 
@@ -135,14 +135,8 @@ function newConnection(socket) {
 
   //recieve line drawn from client and store into database
   socket.on("stroke", function(strokeData) {
-    console.log(strokeData);
-    Stroke.create(strokeData, function(err, createdStroke) {
-      if (err) {
-        console.log(err);
-      } else {
-        console.log("Line Stored");
-      }
-    });
+    // console.log(strokeData);
+    storeStroke(strokeData);
   });
 
   //clear database and all client canvases
@@ -156,59 +150,71 @@ function newConnection(socket) {
       }
     });
   });
-  //ERROR With Stroke.remove
-  //undo
+
+  //recieve undo command
   socket.on("undo", function(user) {
-    console.log("User: " + JSON.stringify(user) + "\n Type: " + typeof(user._id));
     var author = {
       author: {
         id: mongoose.Types.ObjectId(user._id),
         username: user.username
       }
     };
-  //   Stroke.findOneAndRemove(author).sort({date: 'desc'}).exec(function(err, strokes) {
-  //     if (err) {
-  //       console.log(err);
-  //     } else {
-  //       console.log(strokes);
-  //       console.log("Undo");
-  //       Stroke.find({}, function(err, allStrokes) {
-  //         if (err) {
-  //           console.log(err);
-  //         } else {
-  //           io.sockets.emit("refreshCanvas", allStrokes);
-  //         }
-  //       });
-  //     }
-  //   });
-  //   //////
-  // });
-  //Sort option doesn't work
-  Stroke.find(author, function(err, strokes) {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log(JSON.stringify(strokes));
-      var id = strokes[strokes.length - 1]._id;
-      console.log(id);
-      Stroke.remove({_id: id}, function(err, removed) {
-        if (err) {
-          console.log(err);
-        } else {
-          console.log("Undo");
-          Stroke.find({}, function(err, allStrokes) {
-            if (err) {
-              console.log(err);
-            } else {
-              io.sockets.emit("refreshCanvas", allStrokes);
-            }
-          });
-        }
-      });
-    }
-  });
-  //////
-});
+    //Can probably shorten with sort, but not working
+    //finds all strokes by user
+    Stroke.find(author, function(err, strokes) {
+      if (err) {
+        console.log(err);
+      } else {
+        //get the id of the most recent stroke
+        var id = strokes[strokes.length - 1]._id;
 
-  //redo
+        //send the most recent stroke to store in array in client
+        socket.emit("undo", strokes[strokes.length - 1]);
+
+        //removes the most recent stroke
+        Stroke.remove({_id: id}, function(err) {
+          if (err) {
+            console.log(err);
+          } else {
+            console.log("Undo");
+
+            //returns all strokes
+            getCanvas();
+          }
+        });
+      }
+    });
+  });
+
+  //receive redo command
+  socket.on("redo", function(stroke) {
+    storeStroke(stroke, getCanvas);
+    console.log("redo");
+  });
+
+  //stores given stroke in DB
+  function storeStroke(stroke, callback = 0) {
+    Stroke.create(stroke, function(err, createdStroke) {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("Line Stored");
+        if (callback != 0) {
+          callback();
+        }
+      }
+    });
+  }
+
+  //gets all strokes in DB and returns it to all clients
+  function getCanvas() {
+    Stroke.find({}, function(err, allStrokes) {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("Got Canvas");
+        io.sockets.emit("refreshCanvas", allStrokes);
+      }
+    });
+  }
 }
