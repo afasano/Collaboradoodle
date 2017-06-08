@@ -60,22 +60,13 @@ app.get("/workspace", isLoggedIn, function(req, res) {
 //User's Personal Workspace
 app.get("/workspace/:id", isLoggedIn, function(req, res) {
   //Get all Sketches for user
-  User.findOne({_id: mongoose.Types.ObjectId(req.params.id)}).populate("sketches").exec(function(err, foundUser) {
+  User.findOne({_id: mongoose.Types.ObjectId(req.params.id)}).populate("sketches").populate("sharedSketches").exec(function(err, foundUser) {
     if (err) {
       console.log(err);
     } else {
-      var userSketches = {
-        names: [],
-        description: [],
-        id: []
-      };
       var sketches = foundUser.sketches;
-      for (var i = 0; i < sketches.length; i++) {
-        userSketches.names.push(sketches[i].name);
-        userSketches.description.push(sketches[i].description);
-        userSketches.id.push(sketches[i]._id);
-      }
-      res.render("workspace/index", {user: req.user, sketches: userSketches});
+      var sharedSketches = foundUser.sharedSketches;
+      res.render("workspace/index", {user: req.user, sketches: sketches, sharedSketches: sharedSketches});
     }
   });
 });
