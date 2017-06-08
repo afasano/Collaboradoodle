@@ -6,13 +6,19 @@ var express                 = require ("express"),
     bodyParser              = require("body-parser"),
     LocalStrategy           = require("passport-local"),
     passportLocalMongoose   = require("passport-local-mongoose"),
+    bodyParser              = require("body-parser"),
+    methodOverride          = require("method-override"),
     Stroke                  = require("./models/stroke"),
+    Sketch                  = require("./models/sketch"),
     User                    = require("./models/user");
 
 mongoose.connect("mongodb://localhost/collab");
 app.use(express.static(__dirname + "/public"));
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(methodOverride("_method"));
+
 app.use(require("express-session")({
     secret: "collaboradoodle",
     resave: false,
@@ -36,14 +42,120 @@ Stroke.remove({}, function(err) {
 });
 
 //ROUTES
+//Homepage
 app.get("/", function(req, res) {
   res.render("landing");
 });
 
-app.get("/canvas", isLoggedIn, function(req, res) {
-  // res.sendFile(path.join(__dirname + "/views/" + "index.html"));
-  //send username and user id to sketch ejs
-  res.render("sketch", { data: req.user });
+// app.get("/canvas", isLoggedIn, function(req, res) {
+//   // res.sendFile(path.join(__dirname + "/views/" + "index.html"));
+//   //send username and user id to sketch ejs
+//   res.render("canvas", { data: req.user });
+// });
+
+app.get("/workspace", isLoggedIn, function(req, res) {
+  res.redirect("/workspace/" + req.user._id);
+});
+
+//User's Personal Workspace
+app.get("/workspace/:id", isLoggedIn, function(req, res) {
+  //Get all Sketches for user
+  User.findOne({_id: mongoose.Types.ObjectId(req.params.id)}).populate("sketches").exec(function(err, foundUser) {
+    if (err) {
+      console.log(err);
+    } else {
+      var userSketches = {
+        names: [],
+        description: [],
+        id: []
+      };
+      var sketches = foundUser.sketches;
+      for (var i = 0; i < sketches.length; i++) {
+        userSketches.names.push(sketches[i].name);
+        userSketches.description.push(sketches[i].description);
+        userSketches.id.push(sketches[i]._id);
+      }
+      res.render("workspace/index", {user: req.user, sketches: userSketches});
+    }
+  });
+});
+
+//New Sketch Page
+app.get("/workspace/:id/new", function(req,res) {
+  res.render("workspace/new");
+});
+
+//Create New Sketch and add to User DB
+app.post("/workspace/:id", function(req, res) {
+  var name = req.body.name;
+  var desc = req.body.description;
+  var newSketch = {
+    name: name,
+    description: desc,
+    strokes: []
+  };
+  //create sketch
+  Sketch.create(newSketch, function(err, createdSketch) {
+      if (err) {
+        console.log(err);
+      } else {
+        //put sketch project into user in DB
+        User.findOne({_id: mongoose.Types.ObjectId(req.params.id)}, function(err, foundUser) {
+          if (err) {
+            console.log(err);
+          } else {
+            foundUser.sketches.push(createdSketch);
+            foundUser.save(function(err, data) {
+              if (err) {
+                console.log(err);
+              } else {
+                // console.log(data);
+                //TODO change this to directly go to new sketch
+                res.redirect("/workspace/" + req.user._id + "/" + createdSketch._id + "/canvas");
+              }
+            });
+          }
+        });
+      }
+  });
+});
+
+//Delete Sketch
+app.delete("/workspace/:id/:sketchId", function(req, res) {
+  User.findOne({_id: mongoose.Types.ObjectId(req.params.id)}, function(err, foundUser) {
+    if (err) {
+      console.log(err);
+    } else {
+      //get index of the sketch to delete in user
+      var index = foundUser.sketches.findIndex(function(element) {
+        return element.equals(req.params.sketchId);
+      });
+      //if index is found
+      if (index > -1) {
+        foundUser.sketches.splice(index, 1);
+        foundUser.save(function(err, data) {
+          if (err) {
+            console.log(err);
+          } else {
+            console.log("deleted sketch");
+            res.redirect("/workspace/" + req.params.id);
+          }
+        });
+      } else {
+        console.log("Did not find sketch")
+      }
+    }
+  });
+});
+
+//Canvas Route
+app.get("/workspace/:id/:sketchId/canvas", function(req, res) {
+  res.render("canvas", { data: req.user });
+});
+
+//Share Route
+app.get("/workspace/:id/:sketchId/share", function(req, res) {
+  res.render("share");
 });
 
 //Auth Routes
@@ -60,7 +172,7 @@ app.post("/register", function(req, res) {
            return res.render("register");
        }
        passport.authenticate("local")(req, res, function() {
-           res.redirect("/canvas");
+           res.redirect("/workspace/" + req.user._id);
        });
    });
 });
@@ -72,10 +184,10 @@ app.get("/login", function(req, res) {
 });
 //login logic
 app.post("/login", passport.authenticate("local", {
-    successRedirect: "/canvas",
+    // successRedirect: "/workspace",
     failureRedirect: "/login",
 }), function(req, res) {
-
+    res.redirect("/workspace/" + req.user._id);
 });
 
 app.get("/logout", function(req, res) {
@@ -108,6 +220,7 @@ var io = socket(server);
 
 io.sockets.on("connection", newConnection);
 
+//Have to fix storing to database
 function newConnection(socket) {
   console.log("new connection: " + socket.id);
 
