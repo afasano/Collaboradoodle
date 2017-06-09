@@ -64,9 +64,7 @@ app.get("/workspace/:id", isLoggedIn, function(req, res) {
     if (err) {
       console.log(err);
     } else {
-      var sketches = foundUser.sketches;
-      var sharedSketches = foundUser.sharedSketches;
-      res.render("workspace/index", {user: req.user, sketches: sketches, sharedSketches: sharedSketches});
+      res.render("workspace/index", {user: req.user, sketches: foundUser.sketches, sharedSketches: foundUser.sharedSketches});
     }
   });
 });
@@ -120,10 +118,31 @@ app.delete("/workspace/:id/:sketchId", function(req, res) {
       if (index > -1) {
         foundUser.sketches.splice(index, 1);
         foundUser.save();
-        console.log("deleted sketch");
+        console.log("Deleted sketch");
         res.redirect("/workspace/" + req.params.id);
       } else {
-        console.log("Did not find sketch")
+        console.log("Did not find sketch");
+      }
+
+      var sharedWith = foundUser.sharedWith;
+      //delete all instances of sketch in other users
+      for (var i = 0; i < sharedWith.length; i++) {
+        if (sharedWith[i].sketchId == req.params.sketchId) {
+          User.findOne({username: sharedWith[i].user}).populate("sharedSketches").exec(function(err, sharedUser) {
+            var sharedSketch = sharedUser.sharedSketches;
+            for (var i = 0; i < sharedSketch.length; i++) {
+              if (sharedSketch[i]._id == req.params.sketchId) {
+                sharedSketch.splice(i, 1);
+                sharedUser.save();
+                console.log("Deleted sketch instance");
+              }
+            }
+          });
+          //delete instance in sharedWith
+          foundUser.sharedWith.splice(i, 1);
+          foundUser.save();
+          console.log("Deleted in sharedWith");
+        }
       }
     }
   });
@@ -141,19 +160,19 @@ app.get("/workspace/:id/:sketchId/share", function(req, res) {
 
 //send invitation
 app.post("/workspace/:id/:sketchId", function(req, res) {
-  //get user from DB and push in sketchId into invitations
   var user = req.body.user;
-  var invitation = {
-    sketchId: req.params.sketchId,
-    author: req.user.username
-  };
+
+  //get user from DB and push in sketchId into invitations
   User.findOne({username: user}, function(err, foundUser) {
     if (err) {
       console.log(err);
     } else {
       //TODO Check if no user when client typing
       if (foundUser != null) {
-        foundUser.invitations.push(invitation);
+        foundUser.invitations.push({
+          sketchId: req.params.sketchId,
+          author: req.user.username
+        });
         foundUser.save();
         console.log("Sent invitation");
         res.redirect("/workspace/" + req.params.id);
@@ -166,7 +185,9 @@ app.post("/workspace/:id/:sketchId", function(req, res) {
 
 //invitation response
 app.put("/workspace/:id", function(req, res) {
-  var sketchId = req.body.sketchId;
+  var invitation = req.body.invitation.split(",");
+  var sketchId = invitation[0];
+  var author = invitation[1];
   var response = Number(req.body.response);
   User.findOne({_id: mongoose.Types.ObjectId(req.params.id)}, function(err, foundUser) {
     if (err) {
@@ -177,6 +198,21 @@ app.put("/workspace/:id", function(req, res) {
         if (foundUser.invitations[i].sketchId == sketchId) {
           //if accept move invite to sharedSketches, if reject delete invitation
           if (response) {
+            //add user and sketchId into sharedWith array of author
+            User.findOne({username: author}, function(err, foundUser) {
+              if (err) {
+                console.log(err);
+              } else {
+                foundUser.sharedWith.push({
+                  sketchId: sketchId,
+                  user: req.user.username
+                });
+                foundUser.save();
+                console.log("Saved shared user");
+              }
+            });
+
+            //add to sharedSketches
             Sketch.findOne({_id: mongoose.Types.ObjectId(sketchId)}, function(err, foundSketch) {
               console.log(foundSketch);
               foundUser.sharedSketches.push(foundSketch);
@@ -185,6 +221,7 @@ app.put("/workspace/:id", function(req, res) {
               console.log("Accepted Invite");
             });
           } else {
+            //remove invite
             foundUser.invitations.splice(i, 1);
             foundUser.save();
             console.log("Deleted Invite");
@@ -192,8 +229,9 @@ app.put("/workspace/:id", function(req, res) {
           break findInvite;
         }
       }
-      res.redirect("/workspace/" + req.params.id);
     }
+    //TODO asynch, make callback
+    res.redirect("/workspace/" + req.params.id);
   });
 });
 
