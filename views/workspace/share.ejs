@@ -1,0 +1,30 @@
+<% include ../partials/header %>
+<div id="auth">
+  <% if (notFound) { %>
+    <div class="ui negative message">
+      <div class="header">
+        User not found...
+      </div>
+      <p>The username typed in was either misspelled or does not exist. Please try again.</p>
+    </div>
+  <% } %>
+  <div class="ui middle aligned center aligned grid">
+    <div class="column">
+      <h2>Share Sketch</h2>
+      <form class="ui large form" action="./" method="POST">
+        <div class="ui stacked segment">
+          <div class="field">
+            <div class="ui left input">
+              <input type="text" name="user" placeholder="username">
+            </div>
+          </div>
+          <button class="ui fluid large submit button">Send Invitation</button>
+        </div>
+      </form>
+      <div class="ui message">
+        <a href="/workspace">Go Back</a>
+      </div>
+    </div>
+  </div>
+</div>
+<% include ../partials/footer %>

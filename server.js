@@ -149,7 +149,7 @@ app.get("/:sketchId/canvas", function(req, res) {
 
 //Share Route
 app.get("/workspace/:id/:sketchId/share", function(req, res) {
-  res.render("share");
+  res.render("workspace/share", {notFound: false});
 });
 
 //send invitation
@@ -172,6 +172,7 @@ app.post("/workspace/:id/:sketchId", function(req, res) {
         res.redirect("/workspace/" + req.params.id);
       } else {
         console.log("No User");
+        res.render("workspace/share", {notFound: true});
       }
     }
   });
