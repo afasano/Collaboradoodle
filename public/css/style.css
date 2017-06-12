@@ -1,3 +1,13 @@
+#head {
+    margin-top: 7.0em;
+}
+
+#auth {
+  margin: auto;
+  width: 50%;
+  padding: 10px;
+}
+
 #copyright {
   text-align: center;
 }

@@ -1,11 +1,33 @@
-<h1>Login</h1>
-
-<form action="/login" method="POST">
-    <input type="text" name="username" placeholder="username">
-    <input type="password" name="password" placeholder="password">
-    <button>Login</button>
-</form>
-
-<li><a href="/register">Sign Up!</a></li>
-<li><a href="/login">Login!</a></li>
-<li><a href="/logout">Logout!</a></li>
+<% include partials/header %>
+<div id="auth">
+  <div class="ui middle aligned center aligned grid">
+    <div class="column">
+      <h2>Account Login</h2>
+      <form class="ui large form" action="/login" method="POST">
+        <div class="ui stacked segment">
+          <div class="field">
+            <div class="ui left icon input">
+              <i class="user icon"></i>
+              <input type="text" name="username" placeholder="username">
+            </div>
+          </div>
+          <div class="field">
+            <div class="ui left icon input">
+              <i class="lock icon"></i>
+              <input type="password" name="password" placeholder="password">
+            </div>
+          </div>
+          <button class="ui fluid large submit button">Login</button>
+        </div>
+      </form>
+      <div class="ui message">
+        New?
+        <a href="/register">Sign Up</a>
+        <div>
+          <a href="/">Home</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<% include partials/footer %>

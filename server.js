@@ -46,7 +46,7 @@ passport.deserializeUser(User.deserializeUser());
 //=========
 //Homepage
 app.get("/", function(req, res) {
-  res.render("landing");
+  res.render("landing", {user: req.user});
 });
 
 // app.get("/canvas", isLoggedIn, function(req, res) {

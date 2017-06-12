@@ -1,12 +1,27 @@
 <% include ../partials/header %>
-<h1>New Sketch</h1>
-<form action="./" method="POST">
-  <input type="text" name="name" placeholder="Sketch Name">
-  <input type="text" name="description" placeholder="Description">
-  <div>
-    <input type="radio" name="type" value="Public" checked="checked"> Public <br>
-    <input type="radio" name="type" value="Private"> Private <br>
+<div id="auth">
+  <div class="ui middle aligned center aligned grid">
+    <div class="column">
+      <h2>New Sketch</h2>
+      <form class="ui large form" action="./" method="POST">
+        <div class="ui stacked segment">
+          <div class="field">
+            <div class="ui left input">
+              <input type="text" name="name" placeholder="Sketch Name">
+            </div>
+          </div>
+          <div class="field">
+            <div class="ui left input">
+              <input type="text" name="description" placeholder="Description">
+            </div>
+          </div>
+          <button class="ui fluid large submit button">Create</button>
+        </div>
+      </form>
+      <div class="ui message">
+        <a href="/workspace">Go Back</a>
+      </div>
+    </div>
   </div>
-  <button>Create</button>
-</form>
+</div>
 <% include ../partials/footer %>
