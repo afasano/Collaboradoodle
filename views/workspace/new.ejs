@@ -1,0 +1,12 @@
+<% include ../partials/header %>
+<h1>New Sketch</h1>
+<form action="./" method="POST">
+  <input type="text" name="name" placeholder="Sketch Name">
+  <input type="text" name="description" placeholder="Description">
+  <div>
+    <input type="radio" name="type" value="Public" checked="checked"> Public <br>
+    <input type="radio" name="type" value="Private"> Private <br>
+  </div>
+  <button>Create</button>
+</form>
+<% include ../partials/footer %>

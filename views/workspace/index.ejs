@@ -1,0 +1,39 @@
+<% include ../partials/header %>
+<h1><%= user.username %>'s workspace</h1>
+<a href="./<%= user._id %>/new" class="ui primary button">New Sketch</a>
+<div>
+  <h4>invitations: </h4>
+  <% for (var i = 0; i < user.invitations.length; i++) { %>
+    <p>New Sketch Invitation from <%= user.invitations[i].author %></p>
+    <form action="?_method=PUT" method="POST">
+      <input type="hidden" name="invitation" value="<%= user.invitations[i].sketchId %>,<%= user.invitations[i].author %>">
+      <button class="ui positive button" name="response" value="1">Accept</button>
+      <button class="ui button" name="response" value="0">Reject</button>
+    </form>
+</div>
+  <% } %>
+</div>
+<hr>
+<h4>My Sketches: </h4>
+<% for (var i = 0; i < sketches.length; i++) { %>
+  <div>
+    <p>Name: <%= sketches[i].name %></p>
+    <p>Description: <%= sketches[i].description %></p>
+    <a class="ui button" href="/<%= sketches[i].id %>/canvas">Go</a>
+    <form action="./<%= user._id %>/<%= sketches[i].id %>?_method=DELETE" method="POST">
+      <button class="ui red button">Delete</button>
+    </form>
+    <a class="ui button" href="./<%= user._id %>/<%= sketches[i].id %>/share">Share</a>
+    <hr>
+  </div>
+<% } %>
+<h4>Shared With Me: </h4>
+<% for (var i = 0; i < sharedSketches.length; i++) { %>
+  <div>
+    <p>Name: <%= sharedSketches[i].name %></p>
+    <p>Description: <%= sharedSketches[i].description %></p>
+    <a class="ui button" href="/<%= sharedSketches[i].id %>/canvas">Go</a>
+    <hr>
+  </div>
+<% } %>
+<% include ../partials/footer %>
