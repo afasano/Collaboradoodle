@@ -6,10 +6,39 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.10/addons/p5.dom.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.10/addons/p5.sound.min.js"></script>
 <!--   <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/1.11.8/semantic.min.css">
    <script src="/socket.io/socket.io.js"></script>
     <script src="sketch.js"></script>
   <style> body {padding: 0; margin: 0;} </style>
   </head>
   <body>
+    <button id="options" class="ui icon button"style="position: absolute; left: 1880px; top: 13px; z-index : 50;">
+  <i class="options icon"></i>
+</button>
+<div id="side" class="ui sidebar inverted vertical menu">
+   <div id="brushColor" class="item">
+     Brush Color<br/>
+   </div>
+   <div id="brushType" class="item">
+     Brush Type
+   </div>
+   <div id="brushSize" class="item">
+     Brush Size
+   </div>
+   <div id="colorPicker" class="item">
+     Color Picker
+     <div id="buttons" class="item">
+       <button id="picker" class="ui icon button">
+         <i class="theme icon"></i>
+    </div>
+   </div>
+   <div id="EraseTitle" class="item">
+     Eraser
+     <div id="buttons" class="item">
+       <button id="eraser" class="ui icon button">
+         <i class="erase icon"></i>
+    </div>
+   </div>
+ </div>
   </body>
 </html>

@@ -7,6 +7,11 @@ var server = app.listen(process.env.PORT, process.env.IP, function() {
   console.log("Server is running");
 });
 
+//For TESTING: LISTEN ON PORT 3000
+/* var server = app.listen(3000, function() {
+  console.log("Port 3000 Server is running");
+});*/
+
 var socket = require('socket.io');
 var io=socket(server);
 
