@@ -1,11 +1,12 @@
 <% include partials/header %>
+<!-- Menu -->
 <div class="ui large fixed inverted menu">
   <div class="ui container">
     <a class="active item" href="/">Home</a>
     <a class="item" href="/workspace">Workspace</a>
     <div class="right menu">
       <% if (user) { %>
-        <a class="item">Hello <%= user.username %></a>
+        <a class="item">Hello <%= user.username.toUpperCase() %></a>
         <a class="item" href="/logout">Logout</a>
       <% } else { %>
         <a class="item" href="/login">Login</a>
@@ -15,7 +16,7 @@
   </div>
 </div>
 
-<div id="head" class="ui inverted vertical masthead center aligned segment">
+<div id="after-menu" class="ui inverted vertical masthead center aligned segment">
   <h1>Collaboradoodle</h1>
   <p>Insert gif here as background of working canvas app with all frontend</p>
 </div>
