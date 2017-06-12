@@ -33,15 +33,17 @@ passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
 //FOR TESTING: remove all drawings from database
-Stroke.remove({}, function(err) {
-  if (err) {
-    console.log(err);
-  } else {
-    console.log("Removed strokes")
-  }
-});
+// Stroke.remove({}, function(err) {
+//   if (err) {
+//     console.log(err);
+//   } else {
+//     console.log("Removed strokes")
+//   }
+// });
 
+//=========
 //ROUTES
+//=========
 //Homepage
 app.get("/", function(req, res) {
   res.render("landing");
@@ -106,51 +108,43 @@ app.post("/workspace/:id", function(req, res) {
 
 //Delete Sketch
 app.delete("/workspace/:id/:sketchId", function(req, res) {
-  User.findOne({_id: mongoose.Types.ObjectId(req.params.id)}, function(err, foundUser) {
+  //delete all strokes
+  Sketch.findOne({_id: mongoose.Types.ObjectId(req.params.sketchId)}, function(err, foundSketch) {
     if (err) {
       console.log(err);
     } else {
-      //get index of the sketch to delete in user
-      var index = foundUser.sketches.findIndex(function(element) {
-        return element.equals(req.params.sketchId);
-      });
-      //if index is found
-      if (index > -1) {
-        foundUser.sketches.splice(index, 1);
-        foundUser.save();
-        console.log("Deleted sketch");
-        res.redirect("/workspace/" + req.params.id);
-      } else {
-        console.log("Did not find sketch");
+      var strokes = foundSketch.strokes;
+      for (var i = 0; i < strokes.length; i++) {
+        Stroke.remove({_id: strokes[i]._id}, function(err) {
+          if (err) {
+            console.log(err);
+          } else {
+            console.log("Removed Strokes");
+          }
+        });
       }
-
-      var sharedWith = foundUser.sharedWith;
-      //delete all instances of sketch in other users
-      for (var i = 0; i < sharedWith.length; i++) {
-        if (sharedWith[i].sketchId == req.params.sketchId) {
-          User.findOne({username: sharedWith[i].user}).populate("sharedSketches").exec(function(err, sharedUser) {
-            var sharedSketch = sharedUser.sharedSketches;
-            for (var i = 0; i < sharedSketch.length; i++) {
-              if (sharedSketch[i]._id == req.params.sketchId) {
-                sharedSketch.splice(i, 1);
-                sharedUser.save();
-                console.log("Deleted sketch instance");
-              }
-            }
-          });
-          //delete instance in sharedWith
-          foundUser.sharedWith.splice(i, 1);
-          foundUser.save();
-          console.log("Deleted in sharedWith");
-        }
-      }
+      //delete sketch
+      removeSketch();
     }
   });
+
+  //fixes asynchronus issue
+  function removeSketch() {
+    //delete the sketch (because embeded all references become unallocated)
+    Sketch.remove({_id: mongoose.Types.ObjectId(req.params.sketchId)}, function(err) {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("Deleted sketch");
+        res.redirect("/workspace/" + req.params.id);
+      }
+    });
+  }
 });
 
 //Canvas Route
 app.get("/:sketchId/canvas", function(req, res) {
-  res.render("canvas", { data: req.user });
+  res.render("canvas", { data: req.user, id: req.params.sketchId });
 });
 
 //Share Route
@@ -198,23 +192,8 @@ app.put("/workspace/:id", function(req, res) {
         if (foundUser.invitations[i].sketchId == sketchId) {
           //if accept move invite to sharedSketches, if reject delete invitation
           if (response) {
-            //add user and sketchId into sharedWith array of author
-            User.findOne({username: author}, function(err, foundUser) {
-              if (err) {
-                console.log(err);
-              } else {
-                foundUser.sharedWith.push({
-                  sketchId: sketchId,
-                  user: req.user.username
-                });
-                foundUser.save();
-                console.log("Saved shared user");
-              }
-            });
-
             //add to sharedSketches
             Sketch.findOne({_id: mongoose.Types.ObjectId(sketchId)}, function(err, foundSketch) {
-              console.log(foundSketch);
               foundUser.sharedSketches.push(foundSketch);
               foundUser.invitations.splice(i, 1);
               foundUser.save();
@@ -229,13 +208,14 @@ app.put("/workspace/:id", function(req, res) {
           break findInvite;
         }
       }
+      res.redirect("/workspace/" + req.params.id);
     }
-    //TODO asynch, make callback
-    res.redirect("/workspace/" + req.params.id);
   });
 });
 
-//Auth Routes
+//======================
+//AUTHENTICATION ROUTES
+//======================
 //show sign up form
 app.get("/register", function(req, res) {
     res.render("register");
@@ -254,7 +234,9 @@ app.post("/register", function(req, res) {
    });
 });
 
+//================
 //LOGIN ROUTES
+//===============
 //render login form
 app.get("/login", function(req, res) {
     res.render("login");
@@ -293,33 +275,52 @@ var server = app.listen(3000, function() {
 // SOCKETS
 //==========
 var socket = require("socket.io");
+//creates new server listening to port passed in
 var io = socket(server);
 
-io.sockets.on("connection", newConnection);
+// //name of room for sketch
+// var roomId;
 
-//Have to fix storing to database
+// io.sockets.on("connection", newConnection);
+//io.sockets is same as io (gets the default namespace / that clients connect to by default)
+io.on("connection", newConnection);
+
+//detects when user connects with a socket.io client side (sketch)
 function newConnection(socket) {
+
+  //name of room for sketch
+  var roomId;
+
   console.log("new connection: " + socket.id);
 
-  //send strokes in database to new connection
-  Stroke.find({}, function(err, allStrokes) {
-    if (err) {
-      console.log(err);
-    } else {
-      //send allStrokes to sender-client only
-      socket.emit("presentCanvas", allStrokes);
-      // console.log("Sent allStrokes to: " + socket.id);
-    }
+  //connect client to sketch room
+  socket.on("room", function(room) {
+    roomId = room;
+    socket.join(room);
+
+    console.log("Joined room: " + roomId);
+
+    //send strokes in database to new connection
+    Sketch.findOne({_id: mongoose.Types.ObjectId(roomId)}, function(err, foundSketch) {
+      if (err) {
+        console.log(err);
+      } else {
+        //send allStrokes to sender-client only
+        socket.emit("presentCanvas", foundSketch.strokes);
+        // console.log("Sent allStrokes to: " + socket.id);
+      }
+    });
   });
 
-  //send new connected username to all clients
+
+  //send new connected username to all clients in room
   socket.on("newUser", function(data) {
-    socket.broadcast.emit("newUser", data)
+    socket.to(roomId).emit("newUser", data)
   });
 
   //mouse data
   socket.on("mouse", function(data) {
-    socket.broadcast.emit("mouse", data);
+    socket.to(roomId).emit("mouse", data);
     // console.log(data);
   });
 
@@ -331,14 +332,30 @@ function newConnection(socket) {
 
   //clear database and all client canvases
   socket.on("clearDB", function() {
-    Stroke.remove({}, function(err) {
-      if (err) {
-        console.log(err);
-      } else {
-        console.log("Cleared Database");
-        socket.broadcast.emit("clearCanvas");
-      }
-    });
+    //get all ids for strokes in sketch and delete each stroke
+      Sketch.findOne({_id: mongoose.Types.ObjectId(roomId)}, function(err, foundSketch) {
+        var strokes = foundSketch.strokes;
+        for (var i = 0; i < strokes.length; i++) {
+          //remove stroke in Stroke collection
+          Stroke.remove({_id: strokes[i]._id}, function(err) {
+            if (err) {
+              console.log(err);
+            } else {
+              console.log("Cleared Database");
+            }
+          });
+        }
+      });
+
+      //deletes strokes in sketch
+      Sketch.findByIdAndUpdate(
+        mongoose.Types.ObjectId(roomId),
+        { $pull : {strokes: {} } },
+        { safe: true },
+        function(err, obj){}
+      );
+
+      socket.to(roomId).emit("clearCanvas")
   });
 
   //recieve undo command
@@ -349,7 +366,8 @@ function newConnection(socket) {
         username: user.username
       }
     };
-    //Can probably shorten with sort, but not working
+
+    //Can probably shorten with sort flag, but not working
     //finds all strokes by user
     Stroke.find(author, function(err, strokes) {
       if (err) {
@@ -374,8 +392,29 @@ function newConnection(socket) {
             } else {
               console.log("Undo");
 
-              //returns all strokes
-              getCanvas();
+              //remove stroke in sketch
+              Sketch.findOne({_id: mongoose.Types.ObjectId(roomId)}, function(err, foundSketch) {
+                if (err) {
+                  console.log(err);
+                } else {
+                  var sketchStrokes = foundSketch.strokes;
+                  //finds the most recent stroke by user id
+                  findUndo:
+                  for (var i = sketchStrokes.length - 1; i >= 0 ; i--) {
+                    console.log("here");
+                    if (sketchStrokes[i]._id.equals(id)) {
+                      console.log("Matched ID Undo");
+                      sketchStrokes.splice(i, 1);
+                      foundSketch.save(function() {
+                        console.log("Refresh Canvas");
+                        //refresh canvas for all users
+                        getCanvas();
+                      });
+                      break findUndo;
+                    }
+                  }
+                }
+              });
             }
           });
         } else {
@@ -387,33 +426,48 @@ function newConnection(socket) {
 
   //receive redo command
   socket.on("redo", function(stroke) {
+    //stores stroke and refreshes canvas
     storeStroke(stroke, getCanvas);
     console.log("redo");
   });
 
   //stores given stroke in DB
   function storeStroke(stroke, callback = 0) {
+    //create new stroke
     Stroke.create(stroke, function(err, createdStroke) {
       if (err) {
         console.log(err);
       } else {
-        console.log("Line Stored");
-        if (callback != 0) {
-          callback();
-        }
+        //pushes new stroke into sketch
+        Sketch.findOne({_id: mongoose.Types.ObjectId(roomId)}, function(err, foundSketch) {
+          if (err) {
+            console.log(err);
+          } else {
+            foundSketch.strokes.push(createdStroke);
+            foundSketch.save(callback);
+            console.log("Line Stored");
+          }
+        });
       }
     });
   }
 
-  //gets all strokes in DB and returns it to all clients
+  //gets all strokes of sketch in DB and returns it to all clients
   function getCanvas() {
-    Stroke.find({}, function(err, allStrokes) {
+    Sketch.findOne({_id: mongoose.Types.ObjectId(roomId)}, function(err, foundSketch) {
       if (err) {
         console.log(err);
       } else {
-        // console.log("Got Canvas");
-        io.sockets.emit("refreshCanvas", allStrokes);
+        io.in(roomId).emit("refreshCanvas", foundSketch.strokes);
       }
     });
+    // Stroke.find({}, function(err, allStrokes) {
+    //   if (err) {
+    //     console.log(err);
+    //   } else {
+    //     // console.log("Got Canvas");
+    //     io.in(roomId).emit("refreshCanvas", allStrokes);
+    //   }
+    // });
   }
 }
