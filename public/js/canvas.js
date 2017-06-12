@@ -118,6 +118,12 @@ function drawDatabase(allStrokes) {
 
 function clearCanvas(){
   background(backgroundColor);
+  if (redoButton.class().includes("blue")) {
+    redoButton.removeClass("blue");
+  }
+  if (undoButton.class().includes("blue")) {
+    undoButton.removeClass("blue");
+  }
 }
 
 function clearDatabase() {

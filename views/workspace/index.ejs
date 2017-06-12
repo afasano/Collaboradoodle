@@ -1,19 +1,47 @@
 <% include ../partials/header %>
+
+<div class="ui large fixed inverted menu">
+  <div class="ui container">
+    <a class="item" href="/">Home</a>
+    <a class="active item" href="/workspace">Workspace</a>
+    <div class="right menu">
+      <% if (user) { %>
+        <a class="item">Hello <%= user.username %></a>
+        <a class="item" href="/logout">Logout</a>
+      <% } else { %>
+        <a class="item" href="/login">Login</a>
+        <a class="item" href="/register">Sign Up</a>
+      <% } %>
+    </div>
+  </div>
+</div>
+
 <h1><%= user.username %>'s workspace</h1>
 <a href="./<%= user._id %>/new" class="ui primary button">New Sketch</a>
-<div>
-  <h4>invitations: </h4>
-  <% for (var i = 0; i < user.invitations.length; i++) { %>
-    <p>New Sketch Invitation from <%= user.invitations[i].author %></p>
-    <form action="?_method=PUT" method="POST">
-      <input type="hidden" name="invitation" value="<%= user.invitations[i].sketchId %>,<%= user.invitations[i].author %>">
-      <button class="ui positive button" name="response" value="1">Accept</button>
-      <button class="ui button" name="response" value="0">Reject</button>
-    </form>
-</div>
-  <% } %>
-</div>
-<hr>
+<% if (user.invitations.length > 0) { %>
+  <div>
+    <h4>invitations: </h4>
+    <% for (var i = 0; i < user.invitations.length; i++) { %>
+      <div class="ui info icon message">
+        <i class="child icon"></i>
+        <div class="conent">
+          <div class="header">
+            New Sketch Invite from <%= user.invitations[i].author %>
+          </div>
+          <form action="?_method=PUT" method="POST">
+            <input type="hidden" name="invitation" value="<%= user.invitations[i].sketchId %>,<%= user.invitations[i].author %>">
+            <div class="ui buttons">
+              <button class="ui mini positive button" name="response" value="1">Accept</button>
+              <button class="ui mini button" name="response" value="0">Reject</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    <% } %>
+  </div>
+<% } %>
+
+
 <h4>My Sketches: </h4>
 <% for (var i = 0; i < sketches.length; i++) { %>
   <div>
@@ -24,16 +52,16 @@
       <button class="ui red button">Delete</button>
     </form>
     <a class="ui button" href="./<%= user._id %>/<%= sketches[i].id %>/share">Share</a>
-    <hr>
   </div>
 <% } %>
+
 <h4>Shared With Me: </h4>
 <% for (var i = 0; i < sharedSketches.length; i++) { %>
   <div>
     <p>Name: <%= sharedSketches[i].name %></p>
     <p>Description: <%= sharedSketches[i].description %></p>
     <a class="ui button" href="/<%= sharedSketches[i].id %>/canvas">Go</a>
-    <hr>
   </div>
 <% } %>
+
 <% include ../partials/footer %>

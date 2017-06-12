@@ -161,7 +161,6 @@ app.post("/workspace/:id/:sketchId", function(req, res) {
     if (err) {
       console.log(err);
     } else {
-      //TODO Check if no user when client typing
       if (foundUser != null) {
         foundUser.invitations.push({
           sketchId: req.params.sketchId,
