@@ -167,8 +167,8 @@ function setup(){
   //draw menu when option icon is pressed
   options.mousePressed(drawMenu);
 
-  //socket = io.connect("https://collaboradoodle.herokuapp.com/");
-  socket = io.connect("http://localhost:3000"); //For TESTING: LISTEN ON PORT 3000
+  socket = io.connect("https://collaboradoodle.herokuapp.com/");
+  // socket = io.connect("http://localhost:3000"); //For TESTING: LISTEN ON PORT 3000
 
   //connect client to room specific to sketchId
   socket.on("connect", function() {
