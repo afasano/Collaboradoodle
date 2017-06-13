@@ -167,8 +167,8 @@ function setup(){
   //draw menu when option icon is pressed
   options.mousePressed(drawMenu);
 
-  socket = io.connect("https://collaboradoodle.herokuapp.com/");
-  // socket = io.connect("http://localhost:3000"); //For TESTING: LISTEN ON PORT 3000
+  // socket = io.connect("https://collaboradoodle.herokuapp.com/");
+  socket = io.connect("http://localhost:3000"); //For TESTING: LISTEN ON PORT 3000
 
   //connect client to room specific to sketchId
   socket.on("connect", function() {
@@ -364,9 +364,9 @@ function redo() {
 }
 
 function mouseMoved(){
-  if (newColor == false) {
-    //makes sure the element in focus is the body (fixes bug with drawing when click on button and with prompt)
-    if (mouseIsPressed && document.activeElement == document.body){
+  //makes sure the element in focus is the body (fixes bug with drawing when click on button and with prompt)
+  if (mouseIsPressed && document.activeElement == document.body){
+    if(newColor == false) {
       var data = {
         x: mouseX,
         y: mouseY,
@@ -387,52 +387,60 @@ function mouseMoved(){
       else{
         rect(mouseX, mouseY, size, size)
       }
-    }
-  } else {
-    if(mouseIsPressed){
-      var c = get(mouseX,mouseY);
-      red = c[0];
-      green = c[1];
-      blue = c[3];
-      rslider.value(c[0]);
-      gslider.value(c[1]);
-      bslider.value(c[2]);
-      rtext.value(rslider.value());
-      gtext.value(gslider.value());
-      btext.value(bslider.value());
-      newColor = false;
+    } else {
+      if(mouseIsPressed){
+        getColor();
+      }
     }
   }
 }
 
 function mouseReleased() {
   if (document.activeElement == document.body){
-    var strokeData = {
-      stroke: line,
-      author: {
-        id: user._id,
-        username: user.username
-      }
-    };
+    if (newColor == false ) {
+      var strokeData = {
+        stroke: line,
+        author: {
+          id: user._id,
+          username: user.username
+        }
+      };
 
-    //send from client to server the line just drawn
-    socket.emit("stroke", strokeData);
-    // empty line array
-    line = [];
+      //send from client to server the line just drawn
+      socket.emit("stroke", strokeData);
+      // empty line array
+      line = [];
 
-    //change color of history buttons
-    if (undos.length == 0)  {
-      if (!undoButton.class().includes("blue")) {
-        undoButton.addClass("blue");
+      //change color of history buttons
+      if (undos.length == 0)  {
+        if (!undoButton.class().includes("blue")) {
+          undoButton.addClass("blue");
+        }
+      } else {
+        //if new stroke is drawn then undo history cleared
+        undos = [];
+        if (redoButton.class().includes("blue")) {
+          redoButton.removeClass("blue");
+        }
       }
     } else {
-      //if new stroke is drawn then undo history cleared
-      undos = [];
-      if (redoButton.class().includes("blue")) {
-        redoButton.removeClass("blue");
-      }
+      getColor();
     }
   }
+}
+
+function getColor() {
+  var c = get(mouseX,mouseY);
+  red = c[0];
+  green = c[1];
+  blue = c[3];
+  rslider.value(c[0]);
+  gslider.value(c[1]);
+  bslider.value(c[2]);
+  rtext.value(rslider.value());
+  gtext.value(gslider.value());
+  btext.value(bslider.value());
+  newColor = false;
 }
 
 //can probably shorten this

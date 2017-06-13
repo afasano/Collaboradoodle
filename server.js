@@ -13,9 +13,9 @@ var express                 = require ("express"),
     User                    = require("./models/user");
 
 //local mongodb
-// mongoose.connect("mongodb://localhost/collab");
+mongoose.connect("mongodb://localhost/collab");
 
-mongoose.connect("mongodb://richard:password@ds127391.mlab.com:27391/collaboradoodle");
+// mongoose.connect("mongodb://richard:password@ds127391.mlab.com:27391/collaboradoodle");
 //mongodb://richard:password@ds127391.mlab.com:27391/collaboradoodle
 
 app.use(express.static(__dirname + "/public"));
@@ -250,14 +250,14 @@ function isLoggedIn(req, res, next) {
     res.redirect("/login");
 }
 
-var server = app.listen(process.env.PORT, process.env.IP, function() {
-  console.log("Server is running");
-});
+// var server = app.listen(process.env.PORT, process.env.IP, function() {
+//   console.log("Server is running");
+// });
 
 // For TESTING: LISTEN ON PORT 3000
-// var server = app.listen(3000, function() {
-//   console.log("Port 3000 Server is running");
-// });
+var server = app.listen(3000, function() {
+  console.log("Port 3000 Server is running");
+});
 
 
 //==========
