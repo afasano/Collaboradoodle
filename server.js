@@ -32,15 +32,6 @@ passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
-//FOR TESTING: remove all drawings from database
-// Stroke.remove({}, function(err) {
-//   if (err) {
-//     console.log(err);
-//   } else {
-//     console.log("Removed strokes")
-//   }
-// });
-
 //=========
 //ROUTES
 //=========
@@ -48,12 +39,6 @@ passport.deserializeUser(User.deserializeUser());
 app.get("/", function(req, res) {
   res.render("landing", {user: req.user});
 });
-
-// app.get("/canvas", isLoggedIn, function(req, res) {
-//   // res.sendFile(path.join(__dirname + "/views/" + "index.html"));
-//   //send username and user id to sketch ejs
-//   res.render("canvas", { data: req.user });
-// });
 
 app.get("/workspace", isLoggedIn, function(req, res) {
   res.redirect("/workspace/" + req.user._id);
@@ -260,14 +245,14 @@ function isLoggedIn(req, res, next) {
     res.redirect("/login");
 }
 
-// var server = app.listen(process.env.PORT, process.env.IP, function() {
-//   console.log("Server is running");
-// });
+var server = app.listen(process.env.PORT, process.env.IP, function() {
+  console.log("Server is running");
+});
 
 // For TESTING: LISTEN ON PORT 3000
-var server = app.listen(3000, function() {
-  console.log("Port 3000 Server is running");
-});
+// var server = app.listen(3000, function() {
+//   console.log("Port 3000 Server is running");
+// });
 
 
 //==========
@@ -460,13 +445,5 @@ function newConnection(socket) {
         io.in(roomId).emit("refreshCanvas", foundSketch.strokes);
       }
     });
-    // Stroke.find({}, function(err, allStrokes) {
-    //   if (err) {
-    //     console.log(err);
-    //   } else {
-    //     // console.log("Got Canvas");
-    //     io.in(roomId).emit("refreshCanvas", allStrokes);
-    //   }
-    // });
   }
 }

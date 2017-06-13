@@ -324,12 +324,6 @@ function download() {
   }
 }
 
-// function newDrawing(data) {
-//   noStroke();
-//   fill(255, 0, 100);
-//   ellipse(data.x, data.y, 36, 36);
-// }
-
 function newDrawing(data){
   noStroke();
   fill(data.color1, data.color2, data.color3);
