@@ -12,7 +12,12 @@ var express                 = require ("express"),
     Sketch                  = require("./models/sketch"),
     User                    = require("./models/user");
 
-mongoose.connect("mongodb://localhost/collab");
+//local mongodb
+// mongoose.connect("mongodb://localhost/collab");
+
+mongoose.connect("mongodb://richard:password@ds127391.mlab.com:27391/collaboradoodle");
+//mongodb://richard:password@ds127391.mlab.com:27391/collaboradoodle
+
 app.use(express.static(__dirname + "/public"));
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
