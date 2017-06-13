@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.10/semantic.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.10/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.10/addons/p5.dom.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.10/addons/p5.sound.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/1.11.8/semantic.min.css">
+    <!--Socket.io intercepts requests and sends appropriate response automatically when detect /socket.io/socket.io.js -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      //creates var that stores the user data passed from server
+      var user =  <%- JSON.stringify(data) %>;
+      var sketchId = <%- JSON.stringify(id) %>;
+    </script>
+    <script src="/js/canvas.js"></script>
+  <style> body {padding: 0; margin: 0;} </style>
+  <title>Collaboradoodle</title>
+  </head>
+  <body>
+
+    <button id="options" class="ui icon button"style="position: absolute; left: 97%; top: 13px; z-index : 50;">
+      <i class="options icon"></i>
+    </button>
+
+    <div id="side" class="ui sidebar inverted vertical menu">
+
+      <div class="item">
+        <a href="/workspace" class="circular inverted ui blue basic button">Go Back</a>
+      </div>
+
+      <div id="undo-redo" class="item"></div>
+
+      <div id="brushColor" class="item">
+        Brush Color<br/>
+        <br>
+      </div>
+
+      <div id="brushType" class="item">
+        Brush Type
+      </div>
+
+      <div id="brushSize" class="item">
+        Brush Size
+      </div>
+
+      <div id="colorPicker" class="item">
+        Color Picker
+        <div id="buttons" class="item">
+          <button id="picker" class="ui icon button">
+            <i class="theme icon"></i>
+        </div>
+      </div>
+
+      <div id="EraseTitle" class="item">
+        Eraser
+        <div id="buttons" class="item">
+          <button id="eraser" class="ui icon button">
+            <i class="erase icon"></i>
+        </div>
+      </div>
+
+      <div id="other" class="item"></div>
+
+    </div>
+
+  </body>
+</html>

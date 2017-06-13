@@ -1,0 +1,33 @@
+<% include partials/header %>
+<div id="auth">
+  <div class="ui middle aligned center aligned grid">
+    <div class="column">
+      <h2>Sign Up</h2>
+      <form class="ui large form" action="/register" method="POST">
+        <div class="ui stacked segment">
+          <div class="field">
+            <div class="ui left icon input">
+              <i class="user icon"></i>
+              <input type="text" name="username" placeholder="username">
+            </div>
+          </div>
+          <div class="field">
+            <div class="ui left icon input">
+              <i class="lock icon"></i>
+              <input type="password" name="password" placeholder="password">
+            </div>
+          </div>
+          <button class="ui fluid large submit button">Submit</button>
+        </div>
+      </form>
+      <div class="ui message">
+        Already have an account?
+        <a href="/login">Login</a>
+        <div>
+          <a href="/">Home</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<% include partials/footer %>
