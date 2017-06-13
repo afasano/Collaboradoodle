@@ -80,7 +80,6 @@ app.get("/workspace/:id/new", function(req,res) {
 app.post("/workspace/:id", function(req, res) {
   var name = req.body.name;
   var desc = req.body.description;
-  var type = req.body.type;
   var newSketch = {
     name: name,
     description: desc,
