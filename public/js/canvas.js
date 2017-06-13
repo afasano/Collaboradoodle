@@ -134,7 +134,7 @@ function setup(){
   //Sets slider to div
   sizeSlider.parent('#brushSize');
   //Input box for color sliders
-  sizeText = createInput(sizeSlider.value()+"");
+  sizeText = createInput(sizeSlider.value() + "");
   //Sets the color of the words in the box
   sizeText.style("color","black");
   //Sets input to div
