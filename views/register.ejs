@@ -1,5 +1,13 @@
 <% include partials/header %>
 <div id="auth">
+  <% if (alreadyTaken) { %>
+    <div class="ui negative message">
+      <div class="header">
+        Username Already Taken
+      </div>
+      <p>Please try again</p>
+    </div>
+  <% } %>
   <div class="ui middle aligned center aligned grid">
     <div class="column">
       <h2>Sign Up</h2>

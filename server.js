@@ -207,20 +207,28 @@ app.put("/workspace/:id", function(req, res) {
 //======================
 //show sign up form
 app.get("/register", function(req, res) {
-    res.render("register");
+  res.render("register", {alreadyTaken: false});
 });
 
 //handling user sign up
 app.post("/register", function(req, res) {
-   User.register(new User({username: req.body.username}), req.body.password, function(err, user){
-       if(err) {
-           console.log(err);
-           return res.render("register");
-       }
-       passport.authenticate("local")(req, res, function() {
-           res.redirect("/workspace/" + req.user._id);
-       });
-   });
+  User.findOne({username: req.body.username}, function(err, foundUser) {
+    if (foundUser == null) {
+      User.register(new User({username: req.body.username}), req.body.password, function(err, user){
+          if(err) {
+              console.log(err);
+              return res.render("register", {alreadyTaken: true});
+          }
+          passport.authenticate("local")(req, res, function() {
+              res.redirect("/workspace/" + req.user._id);
+          });
+      });
+    } else {
+      console.log("Username already taken");
+      res.render("register", {alreadyTaken: true});
+    }
+  });
+
 });
 
 //================

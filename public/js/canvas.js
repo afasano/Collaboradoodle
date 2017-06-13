@@ -286,7 +286,7 @@ function beginErase() {
 }
 
 function drawDatabase(allStrokes) {
-  console.log("Recieved allStrokes");
+  // console.log("Recieved allStrokes");
   for(let strokeObject of allStrokes) {
     var strokes = strokeObject.stroke;
     for(let stroke of strokes) {
@@ -298,12 +298,6 @@ function drawDatabase(allStrokes) {
 function clearCanvas(){
   // background(backgroundColor);
   background(255,252,191);
-  if (redoButton.class().includes("blue")) {
-    redoButton.removeClass("blue");
-  }
-  if (undoButton.class().includes("blue")) {
-    undoButton.removeClass("blue");
-  }
 }
 
 function clearDatabase() {
